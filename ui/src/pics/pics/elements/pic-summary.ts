@@ -18,6 +18,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { picsStoreContext } from '../context.js';
 import { PicsStore } from '../pics-store.js';
 import { Pic } from '../types.js';
+import './comments-for-pic';
+import './create-comment';
 
 /**
  * @element pic-summary
@@ -53,6 +55,9 @@ export class PicSummary extends LitElement {
           <span><strong>${msg('Story')}</strong></span>
           <span style="white-space: pre-line">${entryRecord.entry.story}</span>
         </div>
+
+        <create-comment .picHash=${entryRecord.actionHash}></create-comment>
+        <comments-for-pic .picHash=${entryRecord.actionHash}></comments-for-pic>
       </div>
     `;
   }

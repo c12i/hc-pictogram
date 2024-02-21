@@ -13,12 +13,14 @@ import {
 import '@holochain-open-dev/profiles/dist/elements/agent-avatar.js';
 import '@holochain-open-dev/profiles/dist/elements/profile-list-item-skeleton.js';
 import '@holochain-open-dev/profiles/dist/elements/profile-prompt.js';
+import '@holochain-open-dev/profiles/dist/elements/search-agent.js';
 import { AsyncStatus, StoreSubscriber } from '@holochain-open-dev/stores';
 import {
   ActionHash,
   AppAgentClient,
   AppAgentWebsocket,
 } from '@holochain/client';
+import { AgentPubKey } from '@holochain/client';
 import { provide } from '@lit/context';
 import { localized, msg } from '@lit/localize';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
@@ -29,6 +31,8 @@ import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { picsStoreContext } from './pics/pics/context.js';
+import './pics/pics/elements/create-pic.js';
+import './pics/pics/elements/my-pics.js';
 import { PicsClient } from './pics/pics/pics-client.js';
 import { PicsStore } from './pics/pics/pics-store.js';
 
@@ -48,6 +52,9 @@ export class HolochainApp extends LitElement {
   @state() _loading = true;
 
   @state() _view = { view: 'main' };
+
+  @state()
+  _selectedAgent!: AgentPubKey;
 
   @provide({ context: profilesStoreContext })
   @property()
@@ -108,7 +115,19 @@ export class HolochainApp extends LitElement {
 
   // TODO: add here the content of your application
   renderContent() {
-    return html``;
+    return html`
+      <create-pic></create-pic>
+      <div>
+        <search-agent
+          @agent-selected=${(e: CustomEvent) => {
+            this._selectedAgent = e.detail.agentPubKey;
+          }}
+        ></search-agent>
+        ${this._selectedAgent
+          ? html`<my-pics .author=${this._selectedAgent}></my-pics>`
+          : html`<my-pics .author=${this._client.myPubKey}></my-pics>`}
+      </div>
+    `;
   }
 
   renderBackButton() {
