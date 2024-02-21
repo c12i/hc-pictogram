@@ -11,6 +11,11 @@ integrity:
       bundled: "../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm"
       dependencies: ~
       dylib: ~
+    - name: pics_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/pics_integrity.wasm"
+      dependencies: ~
+      dylib: ~
 coordinator:
   zomes:
     - name: profiles
@@ -18,4 +23,10 @@ coordinator:
       bundled: "../../../target/wasm32-unknown-unknown/release/profiles.wasm"
       dependencies:
         - name: profiles_integrity
+      dylib: ~
+    - name: pics
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/pics.wasm"
+      dependencies:
+        - name: pics_integrity
       dylib: ~

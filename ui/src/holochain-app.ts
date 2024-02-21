@@ -1,3 +1,7 @@
+import { picsStoreContext } from './pics/pics/context.js';
+import { PicsClient } from './pics/pics/pics-client.js';
+import { PicsStore } from './pics/pics/pics-store.js';
+
 
 // Replace 'ligth.css' with 'dark.css' if you want the dark theme
 import '@shoelace-style/shoelace/dist/themes/light.css';
@@ -28,6 +32,10 @@ type View = { view: 'main' };
 @localized()
 @customElement('holochain-app')
 export class HolochainApp extends LitElement {
+  @provide({ context: picsStoreContext })
+  @property()
+  _picsStore!: PicsStore;
+
 @state() _loading = true;
 
   @state() _view = { view: 'main' };
@@ -52,6 +60,7 @@ export class HolochainApp extends LitElement {
     // Don't change this
     this._profilesStore = new ProfilesStore(new ProfilesClient(appAgentClient, 'pics'));
     this._myProfile = new StoreSubscriber(this, () => this._profilesStore.myProfile);
+    this._picsStore = new PicsStore(new PicsClient(appAgentClient, 'pics'));
   }
 
   renderMyProfile() {

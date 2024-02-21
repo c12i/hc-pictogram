@@ -18,6 +18,12 @@ default-features = false
 features = ["test_utils"]
 version = "0.2.6"
 
+[workspace.dependencies.pics]
+path = "dnas/pics/zomes/coordinator/pics"
+
+[workspace.dependencies.pics_integrity]
+path = "dnas/pics/zomes/integrity/pics"
+
 [workspace.dependencies.profiles]
 path = "dnas/pics/zomes/coordinator/profiles"
 
