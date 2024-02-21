@@ -77,4 +77,10 @@ export class PicsClient extends ZomeClient<PicsSignal> {
     return this.callZome('get_deleted_comments_for_pic', picHash);
   }
 
+  /** My Pics */
+
+  async getMyPics(author: AgentPubKey): Promise<Array<Link>> {
+    return this.callZome('get_my_pics', author);
+  }
+
 }

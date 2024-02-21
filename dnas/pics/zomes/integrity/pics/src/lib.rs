@@ -15,6 +15,7 @@ pub enum EntryTypes {
 #[hdk_link_types]
 pub enum LinkTypes {
     PicToComments,
+    MyPics,
 }
 #[hdk_extern]
 pub fn genesis_self_check(
@@ -134,6 +135,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         tag,
                     )
                 }
+                LinkTypes::MyPics => {
+                    validate_create_link_my_pics(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
             }
         }
         FlatOp::RegisterDeleteLink {
@@ -147,6 +156,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             match link_type {
                 LinkTypes::PicToComments => {
                     validate_delete_link_pic_to_comments(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+                LinkTypes::MyPics => {
+                    validate_delete_link_my_pics(
                         action,
                         original_action,
                         base_address,
@@ -336,6 +354,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 tag,
                             )
                         }
+                        LinkTypes::MyPics => {
+                            validate_create_link_my_pics(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
                     }
                 }
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
@@ -363,6 +389,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     match link_type {
                         LinkTypes::PicToComments => {
                             validate_delete_link_pic_to_comments(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                        LinkTypes::MyPics => {
+                            validate_delete_link_my_pics(
                                 action,
                                 create_link.clone(),
                                 base_address,

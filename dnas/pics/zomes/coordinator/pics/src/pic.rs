@@ -9,6 +9,8 @@ pub fn create_pic(pic: Pic) -> ExternResult<Record> {
                 WasmErrorInner::Guest(String::from("Could not find the newly created Pic"))
             ),
         )?;
+    let my_agent_pub_key = agent_info()?.agent_latest_pubkey;
+    create_link(my_agent_pub_key, pic_hash.clone(), LinkTypes::MyPics, ())?;
     Ok(record)
 }
 #[hdk_extern]
@@ -45,6 +47,14 @@ pub fn delete_pic(original_pic_hash: ActionHash) -> ExternResult<ActionHash> {
             )
         }
     }?;
+    let links = get_links(record.action().author().clone(), LinkTypes::MyPics, None)?;
+    for link in links {
+        if let Some(hash) = link.target.into_action_hash() {
+            if hash.eq(&original_pic_hash) {
+                delete_link(link.create_link_hash)?;
+            }
+        }
+    }
     delete_entry(original_pic_hash)
 }
 #[hdk_extern]

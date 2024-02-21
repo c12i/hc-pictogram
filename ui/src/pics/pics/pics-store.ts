@@ -19,9 +19,6 @@ import { NewEntryAction, Record, ActionHash, EntryHash, AgentPubKey } from '@hol
 import { PicsClient } from './pics-client.js';
 
 export class PicsStore {
-
-
-
   constructor(public client: PicsClient) {}
   
   /** Pic */
@@ -58,5 +55,17 @@ export class PicsStore {
       deletes: deletesForEntryStore(this.client, commentHash, () => this.client.getAllDeletesForComment(commentHash)),
     })
   );
+  
+  /** My Pics */
 
+  myPics = new LazyHoloHashMap((author: AgentPubKey) => 
+    pipe(
+      collectionStore(
+        this.client, 
+        () => this.client.getMyPics(author),
+        'MyPics'
+      ),
+      myPics => slice(this.pics, myPics.map(l => l.target))
+    )
+  );
 }

@@ -1,3 +1,4 @@
+pub mod my_pics;
 pub mod comment;
 pub mod pic;
 use hdk::prelude::*;

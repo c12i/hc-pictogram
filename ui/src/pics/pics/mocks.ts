@@ -138,6 +138,19 @@ export class PicsZomeMock extends ZomeMock implements AppAgentClient {
   async get_comments_for_pic(picHash: ActionHash): Promise<Array<Link>> {
     return this.commentsForPic.get(picHash) || [];
   }
+  
+  async get_my_pics(author: AgentPubKey): Promise<Array<Link>> {
+    const records: Record[] = Array.from(this.pics.values()).map(r => r.revisions[r.revisions.length - 1]).filter(r => r.signed_action.hashed.content.author.toString() === author.toString());
+    return Promise.all(records.map(async record => ({ 
+      target: record.signed_action.hashed.hash, 
+      author: record.signed_action.hashed.content.author,
+      timestamp: record.signed_action.hashed.content.timestamp,
+      zome_index: 0,
+      link_type: 0,
+      tag: new Uint8Array(),
+      create_link_hash: await fakeActionHash()
+    })));
+  }
 
 
 }
@@ -161,3 +174,4 @@ export async function sampleComment(client: PicsClient, partialComment: Partial<
         ...partialComment
     };
 }
+
