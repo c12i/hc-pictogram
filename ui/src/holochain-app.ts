@@ -1,3 +1,5 @@
+import { fileStorageClientContext, FileStorageClient } from '@holochain-open-dev/file-storage';
+
 import { picsStoreContext } from './pics/pics/context.js';
 import { PicsClient } from './pics/pics/pics-client.js';
 import { PicsStore } from './pics/pics/pics-store.js';
@@ -32,7 +34,11 @@ type View = { view: 'main' };
 @localized()
 @customElement('holochain-app')
 export class HolochainApp extends LitElement {
-  @provide({ context: picsStoreContext })
+  @provide({ context: fileStorageClientContext })
+  @property()
+  _fileStorageClient!: FileStorageClient;
+
+@provide({ context: picsStoreContext })
   @property()
   _picsStore!: PicsStore;
 
@@ -61,6 +67,7 @@ export class HolochainApp extends LitElement {
     this._profilesStore = new ProfilesStore(new ProfilesClient(appAgentClient, 'pics'));
     this._myProfile = new StoreSubscriber(this, () => this._profilesStore.myProfile);
     this._picsStore = new PicsStore(new PicsClient(appAgentClient, 'pics'));
+    this._fileStorageClient = new FileStorageClient(appAgentClient, 'pics');
   }
 
   renderMyProfile() {

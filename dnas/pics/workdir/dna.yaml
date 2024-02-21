@@ -16,6 +16,11 @@ integrity:
       bundled: "../../../target/wasm32-unknown-unknown/release/pics_integrity.wasm"
       dependencies: ~
       dylib: ~
+    - name: file_storage_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/file_storage_integrity.wasm"
+      dependencies: ~
+      dylib: ~
 coordinator:
   zomes:
     - name: profiles
@@ -29,4 +34,10 @@ coordinator:
       bundled: "../../../target/wasm32-unknown-unknown/release/pics.wasm"
       dependencies:
         - name: pics_integrity
+      dylib: ~
+    - name: file_storage
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/file_storage.wasm"
+      dependencies:
+        - name: file_storage_integrity
       dylib: ~

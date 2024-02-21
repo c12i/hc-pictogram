@@ -13,6 +13,12 @@ hdi = "=0.3.6"
 hdk = "=0.2.6"
 serde = "=1.0.166"
 
+[workspace.dependencies.file_storage]
+path = "dnas/pics/zomes/coordinator/file_storage"
+
+[workspace.dependencies.file_storage_integrity]
+path = "dnas/pics/zomes/integrity/file_storage"
+
 [workspace.dependencies.holochain]
 default-features = false
 features = ["test_utils"]
