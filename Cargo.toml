@@ -9,8 +9,17 @@ members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
 resolver = "2"
 
 [workspace.dependencies]
-holochain = { version = "0.2.6", default-features = false, features = [
-  "test_utils",
-] }
-hdk = "0.2"
-hdi = "0.3"
+hdi = "=0.3.6"
+hdk = "=0.2.6"
+serde = "=1.0.166"
+
+[workspace.dependencies.holochain]
+default-features = false
+features = ["test_utils"]
+version = "0.2.6"
+
+[workspace.dependencies.profiles]
+path = "dnas/pics/zomes/coordinator/profiles"
+
+[workspace.dependencies.profiles_integrity]
+path = "dnas/pics/zomes/integrity/profiles"

@@ -5,6 +5,17 @@ integrity:
   network_seed: ~
   properties: ~
   origin_time: 1708513873458825
-  zomes: []
+  zomes:
+    - name: profiles_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm"
+      dependencies: ~
+      dylib: ~
 coordinator:
-  zomes: []
+  zomes:
+    - name: profiles
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/profiles.wasm"
+      dependencies:
+        - name: profiles_integrity
+      dylib: ~
