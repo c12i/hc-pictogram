@@ -62,7 +62,7 @@ export class HolochainApp extends LitElement {
 
   _client!: AppAgentClient;
 
-  _myProfile!: any;
+  _myProfile!: any; // XXX: hack to fix TS errors
 
   async firstUpdated() {
     this._client = await AppAgentWebsocket.connect(
