@@ -62,7 +62,7 @@ export class HolochainApp extends LitElement {
 
   _client!: AppAgentClient;
 
-  _myProfile!: StoreSubscriber<AsyncStatus<Profile | undefined>>;
+  _myProfile!: any;
 
   async firstUpdated() {
     this._client = await AppAgentWebsocket.connect(
