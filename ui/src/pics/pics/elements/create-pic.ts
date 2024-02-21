@@ -1,25 +1,37 @@
-import { LitElement, html } from 'lit';
-import { repeat } from "lit/directives/repeat.js";
-import { state, property, query, customElement } from 'lit/decorators.js';
-import { ActionHash, Record, DnaHash, AgentPubKey, EntryHash } from '@holochain/client';
+import {
+  hashProperty,
+  hashState,
+  notifyError,
+  onSubmit,
+  sharedStyles,
+  wrapPathInSvg,
+} from '@holochain-open-dev/elements';
+import '@holochain-open-dev/elements/dist/elements/display-error.js';
+import '@holochain-open-dev/file-storage/dist/elements/upload-files.js';
 import { EntryRecord } from '@holochain-open-dev/utils';
-import { hashProperty, notifyError, hashState, sharedStyles, onSubmit, wrapPathInSvg } from '@holochain-open-dev/elements';
+import {
+  ActionHash,
+  AgentPubKey,
+  DnaHash,
+  EntryHash,
+  Record,
+} from '@holochain/client';
 import { consume } from '@lit/context';
 import { localized, msg } from '@lit/localize';
-import { mdiAlertCircleOutline, mdiDelete } from "@mdi/js";
-
-import '@shoelace-style/shoelace/dist/components/card/card.js';
-import '@holochain-open-dev/elements/dist/elements/display-error.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@holochain-open-dev/file-storage/dist/elements/upload-files.js';
-
+import { mdiAlertCircleOutline, mdiDelete } from '@mdi/js';
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
-import { PicsStore } from '../pics-store.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
+import { LitElement, html } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
+
 import { picsStoreContext } from '../context.js';
+import { PicsStore } from '../pics-store.js';
 import { Pic } from '../types.js';
 
 /**
@@ -29,7 +41,6 @@ import { Pic } from '../types.js';
 @localized()
 @customElement('create-pic')
 export class CreatePic extends LitElement {
-
   /**
    * @internal
    */
@@ -48,9 +59,7 @@ export class CreatePic extends LitElement {
   @query('#create-form')
   form!: HTMLFormElement;
 
-
   async createPic(fields: any) {
-  
     const pic: Pic = {
       image: fields.image,
       story: fields.story,
@@ -58,50 +67,57 @@ export class CreatePic extends LitElement {
 
     try {
       this.committing = true;
-      const record: EntryRecord<Pic> = await this.picsStore.client.createPic(pic);
+      const record: EntryRecord<Pic> = await this.picsStore.client.createPic(
+        pic
+      );
 
-      this.dispatchEvent(new CustomEvent('pic-created', {
-        composed: true,
-        bubbles: true,
-        detail: {
-          picHash: record.actionHash
-        }
-      }));
-      
+      this.dispatchEvent(
+        new CustomEvent('pic-created', {
+          composed: true,
+          bubbles: true,
+          detail: {
+            picHash: record.actionHash,
+          },
+        })
+      );
+
       this.form.reset();
     } catch (e: any) {
       console.error(e);
-      notifyError(msg("Error creating the pic"));
+      notifyError(msg('Error creating the pic'));
     }
     this.committing = false;
   }
 
   render() {
-    return html`
-      <sl-card style="flex: 1;">
-        <span slot="header">${msg("Create Pic")}</span>
+    return html` <sl-card style="flex: 1;">
+      <span slot="header">${msg('Create Pic')}</span>
 
-        <form 
-          id="create-form"
-          class="column"
-          style="flex: 1; gap: 16px;"
-          ${onSubmit(fields => this.createPic(fields))}
-        >  
-          <div>
-          <upload-files name="image" one-file accepted-files="image/jpeg,image/png,image/gif" required></upload-files>          </div>
+      <form
+        id="create-form"
+        class="column"
+        style="flex: 1; gap: 16px;"
+        ${onSubmit(fields => this.createPic(fields))}
+      >
+        <div>
+          <upload-files
+            name="image"
+            one-file
+            accepted-files="image/jpeg,image/png,image/gif"
+            required
+          ></upload-files>
+        </div>
 
-          <div>
-          <sl-input name="story" .label=${msg("Story")}  required></sl-input>          </div>
+        <div>
+          <sl-input name="story" .label=${msg('Story')} required></sl-input>
+        </div>
 
-
-          <sl-button
-            variant="primary"
-            type="submit"
-            .loading=${this.committing}
-          >${msg("Create Pic")}</sl-button>
-        </form> 
-      </sl-card>`;
+        <sl-button variant="primary" type="submit" .loading=${this.committing}
+          >${msg('Create Pic')}</sl-button
+        >
+      </form>
+    </sl-card>`;
   }
-  
+
   static styles = [sharedStyles];
 }
