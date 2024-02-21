@@ -1,0 +1,10 @@
+---
+manifest_version: "1"
+name: pics
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1708513873458825
+  zomes: []
+coordinator:
+  zomes: []
