@@ -1,3 +1,5 @@
+import { Comment } from './types.js';
+
 import { Pic } from './types.js';
 
 import {
@@ -80,8 +82,63 @@ export class PicsZomeMock extends ZomeMock implements AppAgentClient {
     
     return record.signed_action.hashed.hash;
   }
+  /** Comment */
+  comments = new HoloHashMap<ActionHash, {
+    deletes: Array<SignedActionHashed<Delete>>;
+    revisions: Array<Record>;
+  }>();
+  commentsForPic = new HoloHashMap<ActionHash, Link[]>();
+
+  async create_comment(comment: Comment): Promise<Record> {
+    const entryHash = hash(comment, HashType.ENTRY);
+    const record = await fakeRecord(await fakeCreateAction(entryHash), fakeEntry(comment));
+    
+    this.comments.set(record.signed_action.hashed.hash, {
+      deletes: [],
+      revisions: [record]
+    });
+  
+    const existingPicHash = this.commentsForPic.get(comment.pic_hash) || [];
+    this.commentsForPic.set(comment.pic_hash, [...existingPicHash, { 
+      target: record.signed_action.hashed.hash, 
+      author: this.myPubKey,
+      timestamp: Date.now() * 1000,
+      zome_index: 0,
+      link_type: 0,
+      tag: new Uint8Array(),
+      create_link_hash: await fakeActionHash()
+    }]);
+
+    return record;
+  }
+  
+  async get_comment(commentHash: ActionHash): Promise<Record | undefined> {
+    const comment = this.comments.get(commentHash);
+    return comment ? comment.revisions[0] : undefined;
+  }
+  
+  async get_all_deletes_for_comment(commentHash: ActionHash): Promise<Array<SignedActionHashed<Delete>> | undefined> {
+    const comment = this.comments.get(commentHash);
+    return comment ? comment.deletes : undefined;
+  }
+
+  async get_oldest_delete_for_comment(commentHash: ActionHash): Promise<SignedActionHashed<Delete> | undefined> {
+    const comment = this.comments.get(commentHash);
+    return comment ? comment.deletes[0] : undefined;
+  }
+  async delete_comment(original_comment_hash: ActionHash): Promise<ActionHash> {
+    const record = await fakeRecord(await fakeDeleteEntry(original_comment_hash));
+    
+    this.comments.get(original_comment_hash).deletes.push(record.signed_action as SignedActionHashed<Delete>);
+    
+    return record.signed_action.hashed.hash;
+  }
 
   
+  async get_comments_for_pic(picHash: ActionHash): Promise<Array<Link>> {
+    return this.commentsForPic.get(picHash) || [];
+  }
+
 
 }
 
@@ -92,5 +149,15 @@ export async function samplePic(client: PicsClient, partialPic: Partial<Pic> = {
           story: "Lorem ipsum 2",
         },
         ...partialPic
+    };
+}
+
+export async function sampleComment(client: PicsClient, partialComment: Partial<Comment> = {}): Promise<Comment> {
+    return {
+        ...{
+          pic_hash: partialComment.pic_hash || (await client.createPic(await samplePic(client))).actionHash,
+          text: "Lorem ipsum 2",
+        },
+        ...partialComment
     };
 }

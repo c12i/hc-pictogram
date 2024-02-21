@@ -1,3 +1,5 @@
+pub mod comment;
+pub use comment::*;
 pub mod pic;
 pub use pic::*;
 use hdi::prelude::*;
@@ -7,46 +9,28 @@ use hdi::prelude::*;
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     Pic(Pic),
+    Comment(Comment),
 }
-// Validation you perform during the genesis process. Nobody else on the network performs it, only you.
-// There *is no* access to network calls in this callback
+#[derive(Serialize, Deserialize)]
+#[hdk_link_types]
+pub enum LinkTypes {
+    PicToComments,
+}
 #[hdk_extern]
 pub fn genesis_self_check(
     _data: GenesisSelfCheckData,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-// Validation the network performs when you try to join, you can't perform this validation yourself as you are not a member yet.
-// There *is* access to network calls in this function
 pub fn validate_agent_joining(
     _agent_pub_key: AgentPubKey,
     _membrane_proof: &Option<MembraneProof>,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
-// This is the unified validation callback for all entries and link types in this integrity zome
-// Below is a match template for all of the variants of `DHT Ops` and entry and link types
-//
-// Holochain has already performed the following validation for you:
-// - The action signature matches on the hash of its content and is signed by its author
-// - The previous action exists, has a lower timestamp than the new action, and incremented sequence number
-// - The previous action author is the same as the new action author
-// - The timestamp of each action is after the DNA's origin time
-// - AgentActivity authorities check that the agent hasn't forked their chain
-// - The entry hash in the action matches the entry content
-// - The entry type in the action matches the entry content
-// - The entry size doesn't exceed the maximum entry size (currently 4MB)
-// - Private entry types are not included in the Op content, and public entry types are
-// - If the `Op` is an update or a delete, the original action exists and is a `Create` or `Update` action
-// - If the `Op` is an update, the original entry exists and is of the same type as the new one
-// - If the `Op` is a delete link, the original action exists and is a `CreateLink` action
-// - Link tags don't exceed the maximum tag size (currently 1KB)
-// - Countersigned entries include an action from each required signer
-//
-// You can read more about validation here: https://docs.rs/hdi/latest/hdi/index.html#data-validation
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
-    match op.flattened::<EntryTypes, ()>()? {
+    match op.flattened::<EntryTypes, LinkTypes>()? {
         FlatOp::StoreEntry(store_entry) => {
             match store_entry {
                 OpEntry::CreateEntry { app_entry, action } => {
@@ -54,12 +38,24 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         EntryTypes::Pic(pic) => {
                             validate_create_pic(EntryCreationAction::Create(action), pic)
                         }
+                        EntryTypes::Comment(comment) => {
+                            validate_create_comment(
+                                EntryCreationAction::Create(action),
+                                comment,
+                            )
+                        }
                     }
                 }
                 OpEntry::UpdateEntry { app_entry, action, .. } => {
                     match app_entry {
                         EntryTypes::Pic(pic) => {
                             validate_create_pic(EntryCreationAction::Update(action), pic)
+                        }
+                        EntryTypes::Comment(comment) => {
+                            validate_create_comment(
+                                EntryCreationAction::Update(action),
+                                comment,
+                            )
                         }
                     }
                 }
@@ -75,6 +71,17 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     action,
                 } => {
                     match (app_entry, original_app_entry) {
+                        (
+                            EntryTypes::Comment(comment),
+                            EntryTypes::Comment(original_comment),
+                        ) => {
+                            validate_update_comment(
+                                action,
+                                comment,
+                                original_action,
+                                original_comment,
+                            )
+                        }
                         (EntryTypes::Pic(pic), EntryTypes::Pic(original_pic)) => {
                             validate_update_pic(
                                 action,
@@ -103,6 +110,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         EntryTypes::Pic(pic) => {
                             validate_delete_pic(action, original_action, pic)
                         }
+                        EntryTypes::Comment(comment) => {
+                            validate_delete_comment(action, original_action, comment)
+                        }
                     }
                 }
                 _ => Ok(ValidateCallbackResult::Valid),
@@ -115,11 +125,16 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             tag,
             action,
         } => {
-            Ok(
-                ValidateCallbackResult::Invalid(
-                    String::from("There are no link types in this integrity zome"),
-                ),
-            )
+            match link_type {
+                LinkTypes::PicToComments => {
+                    validate_create_link_pic_to_comments(
+                        action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+            }
         }
         FlatOp::RegisterDeleteLink {
             link_type,
@@ -129,27 +144,33 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             original_action,
             action,
         } => {
-            Ok(
-                ValidateCallbackResult::Invalid(
-                    String::from("There are no link types in this integrity zome"),
-                ),
-            )
+            match link_type {
+                LinkTypes::PicToComments => {
+                    validate_delete_link_pic_to_comments(
+                        action,
+                        original_action,
+                        base_address,
+                        target_address,
+                        tag,
+                    )
+                }
+            }
         }
         FlatOp::StoreRecord(store_record) => {
             match store_record {
-                // Complementary validation to the `StoreEntry` Op, in which the record itself is validated
-                // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `StoreEntry`
-                // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `StoreEntry` validation failed
                 OpRecord::CreateEntry { app_entry, action } => {
                     match app_entry {
                         EntryTypes::Pic(pic) => {
                             validate_create_pic(EntryCreationAction::Create(action), pic)
                         }
+                        EntryTypes::Comment(comment) => {
+                            validate_create_comment(
+                                EntryCreationAction::Create(action),
+                                comment,
+                            )
+                        }
                     }
                 }
-                // Complementary validation to the `RegisterUpdate` Op, in which the record itself is validated
-                // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `StoreEntry` and in `RegisterUpdate`
-                // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the other validations failed
                 OpRecord::UpdateEntry {
                     original_action_hash,
                     app_entry,
@@ -202,11 +223,39 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 Ok(result)
                             }
                         }
+                        EntryTypes::Comment(comment) => {
+                            let result = validate_create_comment(
+                                EntryCreationAction::Update(action.clone()),
+                                comment.clone(),
+                            )?;
+                            if let ValidateCallbackResult::Valid = result {
+                                let original_comment: Option<Comment> = original_record
+                                    .entry()
+                                    .to_app_option()
+                                    .map_err(|e| wasm_error!(e))?;
+                                let original_comment = match original_comment {
+                                    Some(comment) => comment,
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                                validate_update_comment(
+                                    action,
+                                    comment,
+                                    original_action,
+                                    original_comment,
+                                )
+                            } else {
+                                Ok(result)
+                            }
+                        }
                     }
                 }
-                // Complementary validation to the `RegisterDelete` Op, in which the record itself is validated
-                // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `RegisterDelete`
-                // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `RegisterDelete` validation failed
                 OpRecord::DeleteEntry { original_action_hash, action, .. } => {
                     let original_record = must_get_valid_record(original_action_hash)?;
                     let original_action = original_record.action().clone();
@@ -262,11 +311,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         EntryTypes::Pic(original_pic) => {
                             validate_delete_pic(action, original_action, original_pic)
                         }
+                        EntryTypes::Comment(original_comment) => {
+                            validate_delete_comment(
+                                action,
+                                original_action,
+                                original_comment,
+                            )
+                        }
                     }
                 }
-                // Complementary validation to the `RegisterCreateLink` Op, in which the record itself is validated
-                // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `RegisterCreateLink`
-                // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `RegisterCreateLink` validation failed
                 OpRecord::CreateLink {
                     base_address,
                     target_address,
@@ -274,21 +327,50 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     link_type,
                     action,
                 } => {
-                    Ok(
-                        ValidateCallbackResult::Invalid(
-                            "There are no link types in this integrity zome".to_string(),
-                        ),
-                    )
+                    match link_type {
+                        LinkTypes::PicToComments => {
+                            validate_create_link_pic_to_comments(
+                                action,
+                                base_address,
+                                target_address,
+                                tag,
+                            )
+                        }
+                    }
                 }
-                // Complementary validation to the `RegisterDeleteLink` Op, in which the record itself is validated
-                // If you want to optimize performance, you can remove the validation for an entry type here and keep it in `RegisterDeleteLink`
-                // Notice that doing so will cause `must_get_valid_record` for this record to return a valid record even if the `RegisterDeleteLink` validation failed
                 OpRecord::DeleteLink { original_action_hash, base_address, action } => {
-                    Ok(
-                        ValidateCallbackResult::Invalid(
-                            "There are no link types in this integrity zome".to_string(),
-                        ),
-                    )
+                    let record = must_get_valid_record(original_action_hash)?;
+                    let create_link = match record.action() {
+                        Action::CreateLink(create_link) => create_link.clone(),
+                        _ => {
+                            return Ok(
+                                ValidateCallbackResult::Invalid(
+                                    "The action that a DeleteLink deletes must be a CreateLink"
+                                        .to_string(),
+                                ),
+                            );
+                        }
+                    };
+                    let link_type = match LinkTypes::from_type(
+                        create_link.zome_index.clone(),
+                        create_link.link_type.clone(),
+                    )? {
+                        Some(lt) => lt,
+                        None => {
+                            return Ok(ValidateCallbackResult::Valid);
+                        }
+                    };
+                    match link_type {
+                        LinkTypes::PicToComments => {
+                            validate_delete_link_pic_to_comments(
+                                action,
+                                create_link.clone(),
+                                base_address,
+                                create_link.target_address,
+                                create_link.tag,
+                            )
+                        }
+                    }
                 }
                 OpRecord::CreatePrivateEntry { .. } => Ok(ValidateCallbackResult::Valid),
                 OpRecord::UpdatePrivateEntry { .. } => Ok(ValidateCallbackResult::Valid),
