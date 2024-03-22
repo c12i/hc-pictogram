@@ -9,12 +9,9 @@ pub fn create_comment(comment: Comment) -> ExternResult<Record> {
         LinkTypes::PicToComments,
         (),
     )?;
-    let record = get(comment_hash.clone(), GetOptions::default())?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Could not find the newly created Comment"))
-            ),
-        )?;
+    let record = get(comment_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
+        WasmErrorInner::Guest(String::from("Could not find the newly created Comment"))
+    ))?;
     Ok(record)
 }
 #[hdk_extern]
@@ -24,41 +21,29 @@ pub fn get_comment(comment_hash: ActionHash) -> ExternResult<Option<Record>> {
     };
     match details {
         Details::Record(details) => Ok(Some(details.record)),
-        _ => {
-            Err(
-                wasm_error!(
-                    WasmErrorInner::Guest(String::from("Malformed get details response"))
-                ),
-            )
-        }
+        _ => Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Malformed get details response"
+        )))),
     }
 }
 #[hdk_extern]
 pub fn delete_comment(original_comment_hash: ActionHash) -> ExternResult<ActionHash> {
-    let details = get_details(original_comment_hash.clone(), GetOptions::default())?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("{pascal_entry_def_name} not found"))
-            ),
-        )?;
+    let details =
+        get_details(original_comment_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
+            WasmErrorInner::Guest(String::from("{pascal_entry_def_name} not found"))
+        ))?;
     let record = match details {
         Details::Record(details) => Ok(details.record),
-        _ => {
-            Err(
-                wasm_error!(
-                    WasmErrorInner::Guest(String::from("Malformed get details response"))
-                ),
-            )
-        }
+        _ => Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Malformed get details response"
+        )))),
     }?;
     let entry = record
         .entry()
         .as_option()
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Comment record has no entry"))
-            ),
-        )?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Comment record has no entry"
+        ))))?;
     let comment = Comment::try_from(entry)?;
     let links = get_links(comment.pic_hash.clone(), LinkTypes::PicToComments, None)?;
     for link in links {
@@ -78,9 +63,9 @@ pub fn get_all_deletes_for_comment(
         return Ok(None);
     };
     match details {
-        Details::Entry(_) => {
-            Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into())))
-        }
+        Details::Entry(_) => Err(wasm_error!(WasmErrorInner::Guest(
+            "Malformed details".into()
+        ))),
         Details::Record(record_details) => Ok(Some(record_details.deletes)),
     }
 }
@@ -91,10 +76,12 @@ pub fn get_oldest_delete_for_comment(
     let Some(mut deletes) = get_all_deletes_for_comment(original_comment_hash)? else {
         return Ok(None);
     };
-    deletes
-        .sort_by(|delete_a, delete_b| {
-            delete_a.action().timestamp().cmp(&delete_b.action().timestamp())
-        });
+    deletes.sort_by(|delete_a, delete_b| {
+        delete_a
+            .action()
+            .timestamp()
+            .cmp(&delete_b.action().timestamp())
+    });
     Ok(deletes.first().cloned())
 }
 #[hdk_extern]
@@ -106,11 +93,9 @@ pub fn get_deleted_comments_for_pic(
     pic_hash: ActionHash,
 ) -> ExternResult<Vec<(SignedActionHashed, Vec<SignedActionHashed>)>> {
     let details = get_link_details(pic_hash, LinkTypes::PicToComments, None)?;
-    Ok(
-        details
-            .into_inner()
-            .into_iter()
-            .filter(|(_link, deletes)| deletes.len() > 0)
-            .collect(),
-    )
+    Ok(details
+        .into_inner()
+        .into_iter()
+        .filter(|(_link, deletes)| deletes.len() > 0)
+        .collect())
 }

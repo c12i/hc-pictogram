@@ -1,0 +1,17 @@
+manifest_version: '1'
+name: pictorgram
+description: null
+roles:
+- name: pics
+  provisioning:
+    strategy: create
+    deferred: false
+  dna:
+    bundled: ../dnas/pics/workdir/pics.dna
+    modifiers:
+      network_seed: null
+      properties: null
+      origin_time: null
+      quantum_time: null
+    installed_hash: null
+    clone_limit: 0

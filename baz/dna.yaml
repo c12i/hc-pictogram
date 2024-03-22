@@ -1,0 +1,42 @@
+manifest_version: '1'
+name: pics
+integrity:
+  network_seed: null
+  properties: null
+  origin_time: 1708513873458825
+  zomes:
+  - name: profiles_integrity
+    hash: null
+    bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
+    dependencies: null
+    dylib: null
+  - name: pics_integrity
+    hash: null
+    bundled: ../../../target/wasm32-unknown-unknown/release/pics_integrity.wasm
+    dependencies: null
+    dylib: null
+  - name: file_storage_integrity
+    hash: null
+    bundled: ../../../target/wasm32-unknown-unknown/release/file_storage_integrity.wasm
+    dependencies: null
+    dylib: null
+coordinator:
+  zomes:
+  - name: profiles
+    hash: null
+    bundled: ../../../target/wasm32-unknown-unknown/release/profiles.wasm
+    dependencies:
+    - name: profiles_integrity
+    dylib: null
+  - name: pics
+    hash: null
+    bundled: ../../../target/wasm32-unknown-unknown/release/pics.wasm
+    dependencies:
+    - name: pics_integrity
+    dylib: null
+  - name: file_storage
+    hash: null
+    bundled: ../../../target/wasm32-unknown-unknown/release/file_storage.wasm
+    dependencies:
+    - name: file_storage_integrity
+    dylib: null

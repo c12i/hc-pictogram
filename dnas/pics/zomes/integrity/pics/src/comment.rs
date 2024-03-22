@@ -14,11 +14,9 @@ pub fn validate_create_comment(
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Dependant action must be accompanied by an entry"))
-            ),
-        )?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Dependant action must be accompanied by an entry"
+        ))))?;
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_update_comment(
@@ -27,7 +25,9 @@ pub fn validate_update_comment(
     _original_action: EntryCreationAction,
     _original_comment: Comment,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Invalid(String::from("Comments cannot be updated")))
+    Ok(ValidateCallbackResult::Invalid(String::from(
+        "Comments cannot be updated",
+    )))
 }
 pub fn validate_delete_comment(
     _action: Delete,
@@ -44,38 +44,31 @@ pub fn validate_create_link_pic_to_comments(
 ) -> ExternResult<ValidateCallbackResult> {
     let action_hash = base_address
         .into_action_hash()
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("No action hash associated with link"))
-            ),
-        )?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "No action hash associated with link"
+        ))))?;
     let record = must_get_valid_record(action_hash)?;
     let _pic: crate::Pic = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
-            ),
-        )?;
-    let action_hash = target_address
-        .into_action_hash()
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("No action hash associated with link"))
-            ),
-        )?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Linked action must reference an entry"
+        ))))?;
+    let action_hash =
+        target_address
+            .into_action_hash()
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "No action hash associated with link"
+            ))))?;
     let record = must_get_valid_record(action_hash)?;
     let _comment: crate::Comment = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
-            ),
-        )?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Linked action must reference an entry"
+        ))))?;
     Ok(ValidateCallbackResult::Valid)
 }
 pub fn validate_delete_link_pic_to_comments(

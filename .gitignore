@@ -1,35 +1,25 @@
-## editors
+# editors
 /.idea
 /.vscode
 
-## system files
+# system files
 .DS_Store
 
-## npm
-node_modules/
-/npm-debug.log
-
-## testing
-/coverage/
-
-## temp folders
-/.tmp/
-
 # build
-/_site/
-dist/
-/out-tsc/
-
-storybook-static
-*.tsbuildinfo
-
-# holochain
-*.happ
-*.webhapp
-*.dna
-
-# cargo
+/dist/
 /target/
 /.cargo/
 
-.direnv/
+# npm 
+/**/node_modules/
+
+# generated and compiled files
+*.happ
+*.webhapp
+*.zip
+*.dna
+
+# temporary files
+.hc*
+.running
+.hc

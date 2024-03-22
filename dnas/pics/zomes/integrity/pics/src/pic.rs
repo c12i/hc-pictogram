@@ -17,7 +17,9 @@ pub fn validate_update_pic(
     _original_action: EntryCreationAction,
     _original_pic: Pic,
 ) -> ExternResult<ValidateCallbackResult> {
-    Ok(ValidateCallbackResult::Invalid(String::from("Pics cannot be updated")))
+    Ok(ValidateCallbackResult::Invalid(String::from(
+        "Pics cannot be updated",
+    )))
 }
 pub fn validate_delete_pic(
     _action: Delete,
@@ -33,23 +35,20 @@ pub fn validate_create_link_my_pics(
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     // Check the entry type for the given action hash
-    let action_hash = target_address
-        .into_action_hash()
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("No action hash associated with link"))
-            ),
-        )?;
+    let action_hash =
+        target_address
+            .into_action_hash()
+            .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+                "No action hash associated with link"
+            ))))?;
     let record = must_get_valid_record(action_hash)?;
     let _pic: crate::Pic = record
         .entry()
         .to_app_option()
         .map_err(|e| wasm_error!(e))?
-        .ok_or(
-            wasm_error!(
-                WasmErrorInner::Guest(String::from("Linked action must reference an entry"))
-            ),
-        )?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Linked action must reference an entry"
+        ))))?;
     // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
