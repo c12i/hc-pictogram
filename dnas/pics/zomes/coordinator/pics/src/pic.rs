@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use pics_integrity::*;
+
 #[hdk_extern]
 pub fn create_pic(pic: Pic) -> ExternResult<Record> {
     let pic_hash = create_entry(&EntryTypes::Pic(pic.clone()))?;
@@ -10,6 +11,7 @@ pub fn create_pic(pic: Pic) -> ExternResult<Record> {
     create_link(my_agent_pub_key, pic_hash.clone(), LinkTypes::MyPics, ())?;
     Ok(record)
 }
+
 #[hdk_extern]
 pub fn get_pic(pic_hash: ActionHash) -> ExternResult<Option<Record>> {
     let Some(details) = get_details(pic_hash, GetOptions::default())? else {
@@ -22,6 +24,7 @@ pub fn get_pic(pic_hash: ActionHash) -> ExternResult<Option<Record>> {
         )))),
     }
 }
+
 #[hdk_extern]
 pub fn delete_pic(original_pic_hash: ActionHash) -> ExternResult<ActionHash> {
     let details =
@@ -44,6 +47,7 @@ pub fn delete_pic(original_pic_hash: ActionHash) -> ExternResult<ActionHash> {
     }
     delete_entry(original_pic_hash)
 }
+
 #[hdk_extern]
 pub fn get_all_deletes_for_pic(
     original_pic_hash: ActionHash,
@@ -58,6 +62,7 @@ pub fn get_all_deletes_for_pic(
         Details::Record(record_details) => Ok(Some(record_details.deletes)),
     }
 }
+
 #[hdk_extern]
 pub fn get_oldest_delete_for_pic(
     original_pic_hash: ActionHash,

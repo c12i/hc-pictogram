@@ -5,6 +5,7 @@ pub struct Comment {
     pub pic_hash: ActionHash,
     pub text: String,
 }
+
 pub fn validate_create_comment(
     _action: EntryCreationAction,
     comment: Comment,
@@ -19,6 +20,7 @@ pub fn validate_create_comment(
         ))))?;
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_update_comment(
     _action: Update,
     _comment: Comment,
@@ -29,6 +31,7 @@ pub fn validate_update_comment(
         "Comments cannot be updated",
     )))
 }
+
 pub fn validate_delete_comment(
     _action: Delete,
     _original_action: EntryCreationAction,
@@ -36,6 +39,7 @@ pub fn validate_delete_comment(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_create_link_pic_to_comments(
     _action: CreateLink,
     base_address: AnyLinkableHash,
@@ -71,6 +75,7 @@ pub fn validate_create_link_pic_to_comments(
         ))))?;
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_delete_link_pic_to_comments(
     _action: DeleteLink,
     _original_action: CreateLink,

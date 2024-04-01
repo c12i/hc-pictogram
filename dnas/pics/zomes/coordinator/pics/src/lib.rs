@@ -3,10 +3,12 @@ pub mod my_pics;
 pub mod pic;
 use hdk::prelude::*;
 use pics_integrity::*;
+
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     Ok(InitCallbackResult::Pass)
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Signal {
@@ -33,6 +35,7 @@ pub enum Signal {
         link_type: LinkTypes,
     },
 }
+
 #[hdk_extern(infallible)]
 pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
     for action in committed_actions {
@@ -41,6 +44,7 @@ pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
         }
     }
 }
+
 fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
     match action.hashed.content.clone() {
         Action::Create(_create) => {
@@ -109,6 +113,7 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
         _ => Ok(()),
     }
 }
+
 fn get_entry_for_action(action_hash: &ActionHash) -> ExternResult<Option<EntryTypes>> {
     let record = match get_details(action_hash.clone(), GetOptions::default())? {
         Some(Details::Record(record_details)) => record_details.record,

@@ -14,6 +14,7 @@ pub fn create_comment(comment: Comment) -> ExternResult<Record> {
     ))?;
     Ok(record)
 }
+
 #[hdk_extern]
 pub fn get_comment(comment_hash: ActionHash) -> ExternResult<Option<Record>> {
     let Some(details) = get_details(comment_hash, GetOptions::default())? else {
@@ -26,6 +27,7 @@ pub fn get_comment(comment_hash: ActionHash) -> ExternResult<Option<Record>> {
         )))),
     }
 }
+
 #[hdk_extern]
 pub fn delete_comment(original_comment_hash: ActionHash) -> ExternResult<ActionHash> {
     let details =
@@ -55,6 +57,7 @@ pub fn delete_comment(original_comment_hash: ActionHash) -> ExternResult<ActionH
     }
     delete_entry(original_comment_hash)
 }
+
 #[hdk_extern]
 pub fn get_all_deletes_for_comment(
     original_comment_hash: ActionHash,
@@ -69,6 +72,7 @@ pub fn get_all_deletes_for_comment(
         Details::Record(record_details) => Ok(Some(record_details.deletes)),
     }
 }
+
 #[hdk_extern]
 pub fn get_oldest_delete_for_comment(
     original_comment_hash: ActionHash,
@@ -84,10 +88,12 @@ pub fn get_oldest_delete_for_comment(
     });
     Ok(deletes.first().cloned())
 }
+
 #[hdk_extern]
 pub fn get_comments_for_pic(pic_hash: ActionHash) -> ExternResult<Vec<Link>> {
     get_links(pic_hash, LinkTypes::PicToComments, None)
 }
+
 #[hdk_extern]
 pub fn get_deleted_comments_for_pic(
     pic_hash: ActionHash,
