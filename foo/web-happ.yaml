@@ -1,6 +1,0 @@
-manifest_version: '1'
-name: pictorgram
-ui:
-  bundled: ../ui/dist.zip
-happ_manifest:
-  bundled: ./pictorgram.happ
