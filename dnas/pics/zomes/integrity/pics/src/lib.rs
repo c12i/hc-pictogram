@@ -328,16 +328,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     ),
                 }
             }
-            OpRecord::CreatePrivateEntry { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::UpdatePrivateEntry { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::CreateCapClaim { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::CreateCapGrant { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::UpdateCapClaim { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::UpdateCapGrant { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::Dna { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::OpenChain { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::CloseChain { .. } => Ok(ValidateCallbackResult::Valid),
-            OpRecord::InitZomesComplete { .. } => Ok(ValidateCallbackResult::Valid),
             _ => Ok(ValidateCallbackResult::Valid),
         },
         FlatOp::RegisterAgentActivity(agent_activity) => match agent_activity {
