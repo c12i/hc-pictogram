@@ -1,16 +1,19 @@
 use hdi::prelude::*;
+
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Pic {
     pub image: EntryHash,
     pub story: String,
 }
+
 pub fn validate_create_pic(
     _action: EntryCreationAction,
     _pic: Pic,
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_update_pic(
     _action: Update,
     _pic: Pic,
@@ -21,6 +24,7 @@ pub fn validate_update_pic(
         "Pics cannot be updated",
     )))
 }
+
 pub fn validate_delete_pic(
     _action: Delete,
     _original_action: EntryCreationAction,
@@ -28,6 +32,7 @@ pub fn validate_delete_pic(
 ) -> ExternResult<ValidateCallbackResult> {
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_create_link_my_pics(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
@@ -52,6 +57,7 @@ pub fn validate_create_link_my_pics(
     // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }
+
 pub fn validate_delete_link_my_pics(
     _action: DeleteLink,
     _original_action: CreateLink,
