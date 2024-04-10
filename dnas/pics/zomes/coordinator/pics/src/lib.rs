@@ -5,6 +5,9 @@ use hdk::prelude::*;
 use pics_integrity::*;
 
 #[hdk_extern]
+// Allows the guest to pass/fail/retry initialization ---> what is the outcome of a failed init?? --> DNA initialization fails --> what is the outcome of failed DNA initialization??
+// Lazy execution - only runs when any zome of the DNA is first called.
+// All zomes in a DNA init at the same times
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     Ok(InitCallbackResult::Pass)
 }
@@ -37,6 +40,8 @@ pub enum Signal {
 }
 
 #[hdk_extern(infallible)]
+// Executes after the WASM call that originated the commits --> how is atomicity achieved in holochain??
+// input is all the action hashes comitted
 pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
     for action in committed_actions {
         if let Err(err) = signal_action(action) {
