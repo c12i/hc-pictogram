@@ -47,9 +47,9 @@ pub fn validate_create_link_my_pics(
                 "No action hash associated with link"
             ))))?;
     let record = must_get_valid_record(action_hash)?;
-    let _pic: crate::Pic = record
+    let _pic = record
         .entry()
-        .to_app_option()
+        .to_app_option::<crate::Pic>()
         .map_err(|e| wasm_error!(e))?
         .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
             "Linked action must reference an entry"
