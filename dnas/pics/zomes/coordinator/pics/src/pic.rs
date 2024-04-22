@@ -3,7 +3,7 @@ use pics_integrity::*;
 
 #[hdk_extern]
 pub fn create_pic(pic: Pic) -> ExternResult<Record> {
-    let pic_hash = create_entry(&EntryTypes::Pic(pic.clone()))?;
+    let pic_hash = create_entry(&EntryTypes::Pic(pic))?;
     let record = get(pic_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
         WasmErrorInner::Guest(String::from("Could not find the newly created Pic"))
     ))?;
